@@ -1,26 +1,47 @@
 package gopy
 
 import (
+	"fmt"
 	"github.com/DataDog/go-python3"
 )
 
 func ImportModule(pyFolder string, pyFile string) *python3.PyObject {
-	python3.PyRun_SimpleString("import sys\nsys.path.append(\"\")")
+	python3.PyRun_SimpleString(`import sys; print("Python sys.path:", sys.path)`)
+	python3.PyRun_SimpleString("import sys\nsys.path.append(\".\")") // Asegura que el directorio actual esté en sys.path
 
-	Imodule := python3.PyImport_ImportModule(pyFolder + "." + pyFile) //new ref, decref needed
+	moduleName := pyFolder + "." + pyFile
+	fmt.Println("Trying to import module:", moduleName)
+
+	Imodule := python3.PyImport_ImportModule(moduleName)
+	if Imodule == nil {
+		panic("Error: Could not import module. Check if the module exists and is in the correct path.")
+	}
 	defer Imodule.DecRef()
-	module := python3.PyImport_AddModule(pyFolder + "." + pyFile) //borrowed ref from Imodue, do not need decref
+
+	module := python3.PyImport_AddModule(moduleName)
+	if module == nil {
+		panic("Error: PyImport_AddModule returned nil. The module may not exist.")
+	}
 	return module
 }
 
+
+
 func GetFunc(module *python3.PyObject, funcName string) *python3.PyObject {
+	if module == nil {
+		panic("Error: The provided module is nil. Check if the module was correctly imported.")
+	}
 	dict := python3.PyModule_GetDict(module)
+	if dict == nil {
+		panic("Error: Could not retrieve the dictionary from the module.")
+	}
 	function := python3.PyDict_GetItemString(dict, funcName)
 	if function == nil || (python3.PyCallable_Check(function) == false) {
 		panic("Error: Not a callable function.")
 	}
 	return function
 }
+
 
 func TypeCheck(val *python3.PyObject) string {
 	if python3.PyBool_Check(val) {

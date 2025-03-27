@@ -41,8 +41,15 @@ func main() {
 	bcNet := network.NetworkInit()
 	rpc.Register(bcNet)
 	rpc.HandleHTTP()
-	l, _ := net.Listen("tcp", chain.BaseNode)
+
+	l, err := net.Listen("tcp", chain.BaseNode)
+	if err != nil {
+		log.Fatalf("Error al iniciar el listener: %v", err)
+}
+
 	go http.Serve(l, nil)
+
+	time.Sleep(time.Second * 2) // TODO: REMOVE
 
 	//call
 	conn, err := rpc.DialHTTP("tcp", chain.BaseNode)
@@ -59,7 +66,10 @@ func main() {
 		nodes = append(nodes, n)
 		//register to the blockchain network
 		var reg bool
-		conn.Call("BlockchainNetwork.Register", network.RegisterInfo{n.ID, n.Address, n.Vrf.RolesPk}, &reg)
+		err := conn.Call("BlockchainNetwork.Register", network.RegisterInfo{n.ID, n.Address, n.Vrf.RolesPk}, &reg)
+		if err != nil {
+			log.Printf("Error registrando nodo %d en la red: %v", n.ID, err)
+		}
 
 		go n.ClientServing(n.Address)
 	}
@@ -70,7 +80,10 @@ func main() {
 		nodes = append(nodes, n)
 		//register to the blockchain network
 		var reg bool
-		conn.Call("BlockchainNetwork.Register", network.RegisterInfo{n.ID, n.Address, n.Vrf.RolesPk}, &reg)
+		err := conn.Call("BlockchainNetwork.Register", network.RegisterInfo{n.ID, n.Address, n.Vrf.RolesPk}, &reg)
+		if err != nil {
+			log.Printf("Error registrando nodo %d en la red: %v", n.ID, err)
+		}
 
 		go n.ClientServing(n.Address)
 	}
