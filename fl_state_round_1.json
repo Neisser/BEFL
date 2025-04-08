@@ -1,0 +1,22 @@
+{
+    "blockchain": {
+        "chain": [
+            {
+                "index": 0,
+                "timestamp": 1743653681.787457,
+                "transactions": [],
+                "previous_hash": "0",
+                "nonce": 0,
+                "hash": "472b0367ea41264830fdf058c585e9d304d90fed66738ff4d41d791be5e48017"
+            },
+            {
+                "index": 1,
+                "timestamp": 1743653746.065225,
+                "transactions": [
+                    {
+                        "from": "client_0",
+                        "to": "global_model",
+                        "amount": 1.0,
+                        "type": "model_update",
+                        "model_update": {
+                            "conv1.weight": 

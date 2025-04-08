@@ -22,18 +22,17 @@ import (
 
 func main() {
 	log_dir := "log"
-    if err := createDirIfNotExist(log_dir); err != nil {
-        fmt.Println(err)
-    } else {
-        fmt.Println("Directory created or already exists:", log_dir)
-    }
+	if err := createDirIfNotExist(log_dir); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Directory created or already exists:", log_dir)
+	}
 	result_dir := "results"
-    if err := createDirIfNotExist(result_dir); err != nil {
-        fmt.Println(err)
-    } else {
-        fmt.Println("Directory created or already exists:", result_dir)
-    }
-
+	if err := createDirIfNotExist(result_dir); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Directory created or already exists:", result_dir)
+	}
 
 	file, _ := os.OpenFile("log/log.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	log.SetOutput(file)
@@ -45,7 +44,7 @@ func main() {
 	l, err := net.Listen("tcp", chain.BaseNode)
 	if err != nil {
 		log.Fatalf("Error al iniciar el listener: %v", err)
-}
+	}
 
 	go http.Serve(l, nil)
 
@@ -88,8 +87,19 @@ func main() {
 		go n.ClientServing(n.Address)
 	}
 
-	//python initialize
 	python3.Py_Initialize()
+
+	cwd, _ := os.Getwd()
+	pythonPath := fmt.Sprintf("%s:%s/venv/lib/python3.7/site-packages", cwd, cwd)
+	python3.PySys_SetPath(pythonPath)
+
+	// Set the Python executable path
+	python3.PyRun_SimpleString(`import sys; sys.executable = "` + cwd + `/venv/bin/python3"`)
+
+	// Add debug prints
+	python3.PyRun_SimpleString(`import sys; print("Python sys.path:", sys.path)`)
+	python3.PyRun_SimpleString(`import sys; print("Python executable:", sys.executable)`)
+	python3.PyRun_SimpleString(`import os; print("LD_LIBRARY_PATH:", os.environ.get("LD_LIBRARY_PATH"))`)
 
 	gopy.Interact = gopy.ImportModule("fl", "interact")
 	gopy.Init = gopy.GetFunc(gopy.Interact, "init")
@@ -199,10 +209,10 @@ func main() {
 }
 
 func createDirIfNotExist(dir string) error {
-    // Use os.Stat to check if the directory exists
-    if _, err := os.Stat(dir); os.IsNotExist(err) {
-        // Use os.MkdirAll to create the directory and any necessary parents
-        return os.MkdirAll(dir, 0755) // Change the permissions as needed
-    }
-    return nil // If the directory already exists or the function succeeds
+	// Use os.Stat to check if the directory exists
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		// Use os.MkdirAll to create the directory and any necessary parents
+		return os.MkdirAll(dir, 0755) // Change the permissions as needed
+	}
+	return nil // If the directory already exists or the function succeeds
 }

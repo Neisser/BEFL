@@ -7,7 +7,7 @@ var (
 	NumTxs        = 50       // the maximum number of transactions that contained in the pool
 	BaseNode      = ":9000" // the initial node in the blockchain network
 	DefaultStake  = 1
-	NodeNum       = 100 //100, 200, 500, 1000
+	NodeNum       = 2 //100, 200, 500, 1000
 	SybilRatio    = 0.0 //the fraction of sybils in blockchain nodes
 	MaxVoteStep    = 5
 	BlockTimeout   = 240 * time.Second

@@ -2,18 +2,25 @@ package gopy
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/DataDog/go-python3"
 )
 
 func ImportModule(pyFolder string, pyFile string) *python3.PyObject {
+	cwd, _ := os.Getwd()
+	python3.PyRun_SimpleString(`import sys; sys.executable = "` + cwd + `/venv/bin/python3"`)
 	python3.PyRun_SimpleString(`import sys; print("Python sys.path:", sys.path)`)
-	python3.PyRun_SimpleString("import sys\nsys.path.append(\".\")") // Asegura que el directorio actual esté en sys.path
+	python3.PyRun_SimpleString(`import sys; print("Python executable:", sys.executable)`)
+	python3.PyRun_SimpleString(`import sys; sys.path.append(".")`)
+	python3.PyRun_SimpleString(`import sys; sys.path.append("` + cwd + `/venv/lib/python3.7/site-packages")`)
 
 	moduleName := pyFolder + "." + pyFile
 	fmt.Println("Trying to import module:", moduleName)
 
 	Imodule := python3.PyImport_ImportModule(moduleName)
 	if Imodule == nil {
+		python3.PyErr_Print() // Print Python error details
 		panic("Error: Could not import module. Check if the module exists and is in the correct path.")
 	}
 	defer Imodule.DecRef()
@@ -24,8 +31,6 @@ func ImportModule(pyFolder string, pyFile string) *python3.PyObject {
 	}
 	return module
 }
-
-
 
 func GetFunc(module *python3.PyObject, funcName string) *python3.PyObject {
 	if module == nil {
@@ -41,7 +46,6 @@ func GetFunc(module *python3.PyObject, funcName string) *python3.PyObject {
 	}
 	return function
 }
-
 
 func TypeCheck(val *python3.PyObject) string {
 	if python3.PyBool_Check(val) {
