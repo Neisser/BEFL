@@ -1,34 +1,177 @@
-# Lightweight Blockchain-Empowered Secure and Efficient Federated Edge Learning
-This repository contains the code of our paper, <a href="https://ieeexplore.ieee.org/abstract/document/10177803">Lightweight Blockchain-Empowered Secure and Efficient Federated Edge Learning</a>.
+# Blockchain-Empowered Federated Learning (BEFL)
 
-## Environment
-The golang environment (Go 1.16). The release of the Go 1.16 can be found <a href="https://go.dev/dl/">here</a>, and the installation instruction can be found <a href="https://go.dev/doc/install">here</a>.
-<br>
-Python 3.7 is required for the go-python library <a href="https://github.com/DataDog/go-python3"> go-python3</a>.
-<br>
-IPFS 0.19.0. Instruction for IPFS installation can be found at <a href="https://docs.ipfs.tech/install/command-line/#system-requirements">https://docs.ipfs.tech/install/command-line/#system-requirements</a>.<br><br>
-<b>Packge requirement</b>
-| Package     | Version |
-|-------------|---------|
-| pytorch     | 1.7.1   |
-| numpy       | 1.18.1  |
-| scipy       | 1.4.1   |
-| torchvision | 0.8.2   |
+A lightweight, secure, and efficient federated learning system that integrates blockchain technology for decentralized model aggregation and distribution.
 
-The reuqired go packages will be automatically downloaded when run the experiment.
+## Features
 
+- **Secure Aggregation**: Byzantine-robust model update aggregation using mutual information
+- **Communication Efficiency**: PowerSGD compression for reduced communication overhead
+- **Decentralized Architecture**: Blockchain-based consensus for model aggregation
+- **IPFS Integration**: Scalable storage for model parameters
+- **VRF-based Consensus**: Energy-efficient committee selection
 
-## Data
-<b>FEMNIST:</b> from the <a href="https://leaf.cmu.edu/">LEAF</a> benchmark suite, with the relevant downloading and preprocessing instructions <a href="https://github.com/TalwalkarLab/leaf/tree/master/data/femnist">here</a>. The command-line arguments for the LEAF preprocessing utility used were to generate the full-sized non-iid dataset, with minimum 15 samples/user, sample-based 80-20 train-test split were: ```./preprocess.sh -s niid --sf 1.0 -k 15 -t sample --tf 0.8```. The resulting training .json files files should then be copied to ```../data/FEMNIST_data/train``` and the testing files to ```../data/FEMNIST_data/test```.<br>
+## Prerequisites
 
-<b>CIFAR10:</b> can be downloaded <a href="https://www.cs.toronto.edu/~kriz/cifar.html">here</a>. The extracted file should be copied to ```../data/CIFAR10_data/```.
+- Python 3.7+
+- Go 1.16+
+- IPFS daemon
+- CUDA-capable GPU (optional, for faster training)
 
-## Hyperparameters
-The hyperpearemeters about the blockchain are set in ```chain/variables.go```。 ```client/variables_FL.go``` contains the set hyperparameters for the FL task.
+## Installation
 
-## Project running
-First start the IPFS by running ```ipfs deamon```, then
-```
-go run main.go
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/befl.git
+cd befl
 ```
 
+2. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Install Go dependencies:
+```bash
+go mod download
+```
+
+4. Start IPFS daemon:
+```bash
+ipfs daemon
+```
+
+## Project Structure
+
+```
+befl/
+├── src/
+│   ├── fl/
+│   │   ├── aggregation/     # Secure aggregation protocol
+│   │   ├── compression/     # PowerSGD compression
+│   │   └── validation/      # Mutual information validation
+│   └── blockchain/
+│       ├── consensus/       # VRF-based consensus
+│       └── storage/         # IPFS storage
+├── tests/                   # Test suite
+└── requirements.txt         # Python dependencies
+```
+
+## Usage
+
+### 1. Initialize the System
+
+```python
+from src.fl.aggregation.secure_aggregation import SecureAggregator
+from src.fl.compression.powersgd import PowerSGDCompressor
+from src.fl.validation.mutual_info import MutualInformationValidator
+
+# Initialize components
+compressor = PowerSGDCompressor(rank=2)
+validator = MutualInformationValidator(threshold=0.1)
+aggregator = SecureAggregator(
+    compressor=compressor,
+    validator=validator
+)
+```
+
+### 2. Train a Model
+
+```python
+import torch
+import torch.nn as nn
+
+# Define your model
+model = nn.Sequential(
+    nn.Linear(10, 64),
+    nn.ReLU(),
+    nn.Linear(64, 10)
+)
+
+# Initialize global model and momentum
+global_model = {name: param.clone() for name, param in model.named_parameters()}
+momentum = {name: torch.zeros_like(param) for name, param in model.named_parameters()}
+```
+
+### 3. Aggregate Updates
+
+```python
+# Prepare updates and unlabeled data
+updates = [...]  # List of compressed model updates
+unlabeled_data = torch.randn(100, 10)  # Example unlabeled data
+
+# Aggregate updates
+result = aggregator.aggregate(
+    global_model=global_model,
+    momentum=momentum,
+    updates=updates,
+    unlabeled_data=unlabeled_data
+)
+```
+
+## Running Tests
+
+```bash
+# Run all tests
+python -m unittest discover tests
+
+# Run specific test
+python -m unittest tests.test_secure_aggregation
+```
+
+## Configuration
+
+The system can be configured through the following parameters:
+
+- **PowerSGD Compression**:
+  - `rank`: Rank of low-rank approximation (default: 2)
+  - `num_power_iterations`: Number of power iterations (default: 1)
+
+- **Mutual Information Validation**:
+  - `threshold`: MI threshold for update selection (default: 0.1)
+
+- **Secure Aggregation**:
+  - `beta`: Momentum parameter (default: 0.9)
+  - `eta`: Learning rate (default: 1.0)
+
+## Performance Considerations
+
+- Use CUDA if available for faster computation
+- Adjust PowerSGD rank based on model size and available bandwidth
+- Tune MI threshold based on expected update distribution
+- Monitor IPFS daemon performance for large models
+
+## Security Considerations
+
+- Keep private keys secure
+- Monitor for suspicious update patterns
+- Regularly update dependencies
+- Use secure communication channels
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Citation
+
+If you use this code in your research, please cite:
+
+```bibtex
+@article{jin2023lightweight,
+  title={Lightweight Blockchain-Empowered Secure and Efficient Federated Edge Learning},
+  author={Jin, Rui and Hu, Jia and Min, Geyong and Mills, Jed},
+  journal={IEEE Transactions on Computers},
+  volume={72},
+  number={11},
+  pages={3314--3325},
+  year={2023},
+  publisher={IEEE}
+}
+``` 
